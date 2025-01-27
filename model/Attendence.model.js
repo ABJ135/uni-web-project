@@ -8,9 +8,9 @@ const attendenceSchema = new Schema(
       ref: "user",
       required: true,
     },
-    date: { type: Date, required: true },
-    clock_in: { type: Date },
-    clock_out: { type: Date },
+    date: { type: String, required: true },
+    clock_in: { type: String },
+    clock_out: { type: String },
     status: {
       type: String,
       enum: ["present", "absent", "late"],

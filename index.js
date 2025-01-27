@@ -5,10 +5,13 @@ const db = require('./db')
 
 const userRouter = require('./router/user.router')
 const employeeRouter = require('./router/employee.router')
+const attendenceRouter = require('./router/Attendence.router')
+
 app.use(express.json())
 
 app.use('/user',userRouter)
 app.use('/employee',employeeRouter)
+app.use('/attendence',attendenceRouter)
 
 
 app.listen(port,()=>{
