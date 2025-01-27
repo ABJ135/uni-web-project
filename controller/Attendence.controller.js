@@ -67,7 +67,7 @@ const modifyAttendance = async (req, res) => {
     }
 
     const { id } = req.params;
-    const { updateData } = req.body;
+    const  updateData  = req.body;
     const attendance = await Attendence.findByIdAndUpdate(id, updateData, { new: true });
 
     if (!attendance) {
