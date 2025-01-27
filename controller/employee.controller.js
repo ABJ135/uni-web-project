@@ -2,24 +2,30 @@ const employee = require("../model/Employee.model");
 const user = require("../model/User.model");
 
 const createEmployee = async (req, res) => {
-  try {
-    const creator = await user.findById(req.user.id);
+    try {
+      const creator = await user.findById(req.user.id);
+      
+      if (!creator || (creator.role !== "Admin" && creator.role !== "HR")) {
+          return res.status(403).json("You are not authorized to create employees");
+        }
+        
+        const data = req.body;
+        toCreated = await user.findById(data.user_id);
+  
+          if (creator.role === "HR" && toCreated.role === "Admin") {
+        return res
+          .status(403)
+          .json("HR is not authorized to create Admin profiles");
+      }
 
-    if (!creator || (creator.role !== "Admin" && creator.role !== "HR")) {
-      return res.status(403).json("You are not authorized to create employees");
+      const object = await employee.create(data);
+      res.status(201).json({ message: "Employee created successfully", object });
+    } catch (error) {
+      console.log("Error creating employee:", error);
+      res.status(500).json("Error creating employee");
     }
-
-    const data = req.body;
-    data.user_id = req.params.id;
-    
-    const object = await employee.create(data);
-    res.status(201).json({ message: "Employee created successfully", object });
-  } catch (error) {
-    console.log("Error creating employee:", error);
-    res.status(500).json("Error creating employee");
-  }
-};
-
+  };
+  
 const getEmployee = async (req, res) => {
   try {
     const requester = await user.findById(req.user.id);
@@ -126,12 +132,12 @@ const deleteEmployee = async (req, res) => {
       return res.status(401).json("Unauthorized");
     }
 
-    const employee = await employee.findById(id);
-    if (!employee) {
+    const object = await employee.findById(id);
+    if (!object) {
       return res.status(404).json("Employee not found");
     }
 
-    if (deleter.role === "Admin" || (deleter.role === "HR" && employee.user_id.role !== "Admin")) {
+    if (deleter.role === "Admin" || (deleter.role === "HR" && object.user_id.role !== "Admin")) {
       await employee.findByIdAndDelete(id);
       return res.status(200).json({ message: "Employee deleted" });
     }
@@ -151,9 +157,38 @@ const deleteEmployee = async (req, res) => {
   }
 };
 
+const showAllEmployees = async (req, res) => {
+    try {
+      const requester = await user.findById(req.user.id);
+  
+      if (!requester) {
+        return res.status(401).json("Unauthorized");
+      }
+  
+      if (requester.role === "Admin" || requester.role === "HR") {
+        const object = await employee.find().populate("user_id");
+        if (!object) {
+          return res.status(404).json("Employee not found");
+        }
+        return res.status(200).json(object);
+      }
+  
+      if (requester.role === "Manager" || requester.role === "Employee") {
+        
+          return res.status(403).json("You are not authorized to view employee profiles");
+      }
+  
+  
+    } catch (error) {
+      console.log("Error fetching employee:", error);
+      res.status(500).json("Error fetching employee");
+    }
+  };
+
 module.exports = {
   createEmployee,
   getEmployee,
   updateEmployee,
   deleteEmployee,
+  showAllEmployees
 };
